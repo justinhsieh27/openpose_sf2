@@ -3,9 +3,9 @@ import glob
 import os
 import math
 import time
-from pynput.keyboard import Key, Controller
+from subprocess import Popen, PIPE
 
-keyboard = Controller()
+
 
 class PoseClass:
     def __init__(self, jsonData):
@@ -42,10 +42,8 @@ class PoseClass:
         self.A1_8 = None    # body absolute angle
 
         self.listAngle = []
-        self.__pt = []
 
-        self.getAngle()
-        
+        self.__pt = []
 
 
     def getPointValue(self):
@@ -119,68 +117,6 @@ class PoseClass:
         
 
 
-class ActionPoseClass(PoseClass):
-    def __init__(self, actionName, threshold):
-        self.actionName = actionName
-        self.actionFileName = "setting_" + actionName + ".json"
-        self.threshold = threshold
-        
-        print(self.actionFileName)
-
-        #check if setting file exist
-        if not os.path.isfile(self.actionFileName):
-            print(self.actionFileName + " file does not exist. Create a new one.")
-            print("Set your " + self.actionName + " pose in 5 sec.")
-            time.sleep(5)
-            file = open(self.actionFileName, "w") 
-            latest_file = getLastJsonFileName()
-            with open(latest_file , 'r') as reader:
-                reader.read
-                file.write(reader.read())
-                file.close()
-
-        # read pose setting files and create pose objects
-        with open(self.actionFileName , 'r') as reader:
-            data = json.loads(reader.read())
-            super().__init__(data)
-            
-
-
-
-
-    def getPosedDiff(self, pose2):
-        sumSqrDiff = 0
-        cntValid = 0
-        for i in range(len(self.listAngle)):
-            if self.listAngle[i] != None and pose2.listAngle[i] != None :
-
-                angleDiff = self.listAngle[i] - pose2.listAngle[i]
-                if angleDiff > 180:
-                    angleDiff= 360 - angleDiff
-
-                sumSqrDiff = sumSqrDiff + angleDiff ** 2
-                cntValid = cntValid + 1
-            '''        
-            else: # One of pose1 or Pose2 is None, use sumSqrDiff average
-                if i != 0:            
-                    sumSqrDiff = sumSqrDiff + sumSqrDiff/i
-            '''
-        if sumSqrDiff != 0:
-            sumSqrDiff = sumSqrDiff / cntValid
-            return int(sumSqrDiff)
-    
-
-    def isMatch(self, poseNow):
-        result = self.getPosedDiff(poseNow)
-        print(self.actionName + "\t" + str(result))
-        if result !=None and result < self.threshold :
-            return True
-        else:
-            return False
-
-
-
-
 def getLastJsonFileName():
     while(True):
         list_of_files = glob.glob('/dev/shm/temp/output/*.json') # list all the *.json file
@@ -219,61 +155,191 @@ def getPosedDiff(pose1, pose2):
 
 
 
+# Key settings
+# single keyjjjjjjjjjjjjjjjjdsdk
+up_Key = '''key W
+'''
+down_Key = '''key S
+'''
+left_Key = '''key A
+'''
+right_Key = '''key D
+'''
+j_Key = '''key J
+'''
+k_Key = '''key K
+'''
+l_Key = '''key L
+'''
+# key down
+up_KeyDown = '''keydown W
+'''
+down_KeyDown = '''keydown S
+'''
+left_KeyDown = '''keydown A
+'''
+right_KeyDown = '''keydown D
+'''
+j_KeyDown = '''keydown J
+'''
+k_KeyDown = '''keydown K
+'''
+l_KeyDown = '''keydown L
+'''
+# key up
+up_KeyUp = '''keyup W
+'''
+down_KeyUp = '''keyup S
+'''
+left_KeyUp = '''keyup A
+'''
+right_KeyUp = '''keyup D
+'''
+j_KeyUp = '''keyup J
+'''
+k_KeyUp = '''keyup K
+'''
+l_KeyUp = '''keyup L
+'''
 
-def setFireball():
-    # Fireball
-    keyboard.press('s')   # press down
-    time.sleep(0.05)
-    keyboard.press('d')   # press right
-    time.sleep(0.05)
-    keyboard.release('s') # release down
-    time.sleep(0.05)
-    keyboard.press('l')   # press fist
-    time.sleep(0.1)
-    keyboard.release('d') # release right
-    keyboard.release('l') # release fist
+def keypress(sequence):
+    if isinstance(sequence, str):
+        sequence = sequence.encode('ascii')
+    p = Popen(['xte'], stdin=PIPE)
+    p.communicate(input=sequence)
 
-def setDragonPunch():
-    # DragonPunch  
-    keyboard.press('d')   # press right
-    time.sleep(0.03)
-    keyboard.press('s')   # press down
-    time.sleep(0.03)
-    keyboard.release('d') # relese right
-    time.sleep(0.03)
-    keyboard.press('d')   # press right
-    time.sleep(0.03)
-    keyboard.release('s') # release down
-    time.sleep(0.03)
-    keyboard.press('k')   # press fist
+def setBallKen():
+    # Ballken
+    keypress(down_KeyDown)
+    time.sleep(0.05)
+    keypress(right_KeyDown)
+    time.sleep(0.05)
+    keypress(down_KeyUp)
+    time.sleep(0.05)
+    keypress(l_KeyDown)
     time.sleep(0.1)
-    keyboard.release('d') # release right
-    keyboard.release('k') # release fist
+    keypress(right_KeyUp)
+    keypress(l_KeyUp)
+
+
+def setHoluKen():
+    # Holuken
+    keypress(right_KeyDown)
+    time.sleep(0.03)
+    keypress(down_KeyDown)
+    time.sleep(0.03)
+    keypress(right_KeyUp)
+    time.sleep(0.03)
+    keypress(right_KeyDown)
+    time.sleep(0.03)
+    keypress(down_KeyUp)
+    time.sleep(0.03)
+    keypress(k_KeyDown)
+    time.sleep(0.1)
+    keypress(right_KeyUp)
+    keypress(k_KeyUp)
     
-def setFist():
-    keyboard.type('j')
-
-def moveRight():
-    keyboard.press('d')
-
-def moveLeft():
-    keyboard.press('a')
-
 def setNormal():
     # Normal
-    keyboard.release('d')
-    keyboard.release('a')
-    
+    keypress(right_KeyUp)
+    keypress(right_KeyUp)
+    keypress(down_KeyUp)    
+    keypress(k_KeyUp)
+
 
 def main():
+    # check if pose setting files exists.
+    if not os.path.isfile("settingNormal.json"):
+        print("settingNormal.json file does not exist. Create a new one.\nSet your Normal pose in 5 sec.")
+        time.sleep(5)
+        file = open("settingNormal.json", "w") 
+        latest_file = getLastJsonFileName()
+        with open(latest_file , 'r') as reader:
+            reader.read
+            file.write(reader.read())
+            file.close() 
 
-    actionPoses = []
-    poseFireball = ActionPoseClass("Fireball", 500)
-    actionPoses.append(poseFireball)
-    poseDragonPunch = ActionPoseClass("DragonPunch", 500)
-    actionPoses.append(poseDragonPunch)
-    poseFist = ActionPoseClass("Fist", 500)
-    actionPoses.append(poseFist)
+    if not os.path.isfile("settingForward.json"):
+        print("settingForward.json file does not exist. Create a new one.\nSet your Forward pose in 5 sec.")
+        time.sleep(5)
+        file = open("settingForward.json", "w") 
+        latest_file = getLastJsonFileName()
+        with open(latest_file , 'r') as reader:
+            reader.read
+            file.write(reader.read())
+            file.close() 
+        
+    if not os.path.isfile("settingBackward.json"):
+        print("settingBackward.json file does not exist. Create a new one.\nSet your Backward pose in 5 sec.")
+        time.sleep(5)
+        file = open("settingBackward.json", "w") 
+        latest_file = getLastJsonFileName()
+        with open(latest_file , 'r') as reader:
+            reader.read
+            file.write(reader.read())
+            file.close() 
+            
+    if not os.path.isfile("settingFist.json"):
+        print("settingFist.json file does not exist. Create a new one.\nSet your Fist pose in 5 sec.")
+        time.sleep(5)
+        file = open("settingFist.json", "w") 
+        latest_file = getLastJsonFileName()
+        with open(latest_file , 'r') as reader:
+            reader.read
+            file.write(reader.read())
+            file.close()             
+            
+    if not os.path.isfile("settingBallKen.json"):
+        print("settingBallKen.json file does not exist. Create a new one.\nSet your BallKen pose in 5 sec.")
+        time.sleep(5)
+        file = open("settingBallKen.json", "w") 
+        latest_file = getLastJsonFileName()
+        with open(latest_file , 'r') as reader:
+            reader.read
+            file.write(reader.read())
+            file.close()             
+            
+    if not os.path.isfile("settingHoluKen.json"):
+        print("settingHoluKen.json file does not exist. Create a new one.\nSet your HoluKen pose in 5 sec.")
+        time.sleep(5)
+        file = open("settingHoluKen.json", "w") 
+        latest_file = getLastJsonFileName()
+        with open(latest_file , 'r') as reader:
+            reader.read
+            file.write(reader.read())
+            file.close()    
+
+
+    # read pose setting files and create pose objects
+    with open("settingNormal.json" , 'r') as reader:
+        data = json.loads(reader.read())
+        poseNormal = PoseClass(data)
+        poseNormal.getAngle()
+
+    with open("settingForward.json" , 'r') as reader:
+        data = json.loads(reader.read())
+        poseForward = PoseClass(data)
+        poseForward.getAngle()
+    
+    with open("settingBackward.json" , 'r') as reader:
+        data = json.loads(reader.read())
+        poseBackward = PoseClass(data)
+        poseBackward.getAngle()
+
+    with open("settingFist.json" , 'r') as reader:
+        data = json.loads(reader.read())
+        poseFist = PoseClass(data)
+        poseFist.getAngle()
+
+    with open("settingBallKen.json" , 'r') as reader:
+        data = json.loads(reader.read())
+        poseBallKen = PoseClass(data)
+        poseBallKen.getAngle()
+
+    with open("settingHoluKen.json" , 'r') as reader:
+        data = json.loads(reader.read())
+        poseHoluKen = PoseClass(data)
+        poseHoluKen.getAngle()
 
 
     while(True):
@@ -293,35 +359,42 @@ def main():
                 #print(data['people'][0]['pose_keypoints_2d'])
                 
                 pose = PoseClass(data)
+                pose.getAngle()
                 #print(pose.listAngle)
                 
-                '''                          
-                for i in range(len(actionPoses)):
-                    print (actionPoses[i].actionName)
-                    print (actionPoses[i].isMatch(pose))
-                '''
-
+                                          
+                
                
-                if poseFireball.isMatch(pose):
-                    setFireball()
+            
+                # Attack
+                diffFromNormal = getPosedDiff(pose, poseNormal)
+                diffFromBallKen = getPosedDiff(pose, poseBallKen)
+                diffFromHoluKen = getPosedDiff(pose, poseHoluKen)
+                diffFromFist = getPosedDiff(pose, poseFist)
+                #print(diffFromNormal, diffFromBallKen, diffFromHoluKen, diffFromFist)
+
+                if diffFromNormal != None and diffFromNormal < 1000:
+                    setNormal()
+                elif diffFromBallKen != None and diffFromBallKen < 500:
+                    setBallKen()
                     time.sleep(1)
-                elif poseDragonPunch.isMatch(pose):
-                    setDragonPunch()
+                elif diffFromHoluKen != None and diffFromHoluKen < 500:
+                    setHoluKen()
                     time.sleep(1)                                                  
-                elif poseFist.isMatch(pose):
-                    setFist()    
-   
+                elif diffFromFist != None and diffFromFist < 300:
+                    keypress(j_Key)     
                 
 
                 # Movement
                 #print(pose.A1_8)
                 if pose.A1_8 != None and pose.A1_8 < 70:
-                    moveRight()
+                    keypress(right_KeyDown)                    
                 elif pose.A1_8 != None and pose.A1_8 > 110:
-                    moveLeft()
+                    keypress(left_KeyDown)
                 else:
-                    setNormal()
-
+                    keypress(left_KeyUp)
+                    keypress(right_KeyUp)
+                
 
             for p in list_of_files:
                 os.remove(p)
