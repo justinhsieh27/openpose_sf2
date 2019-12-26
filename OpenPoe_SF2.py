@@ -202,7 +202,7 @@ def getPosedDiff(pose1, pose2):
             if angleDiff > 180:
                 angleDiff= 360 - angleDiff
 
-            sumSqrDiff = sumSqrDiff + angleDiff ** 2
+            sumSqrDiff = sumSqrDiff + angleDiff ** 4
             cntValid = cntValid + 1
         '''        
         else: # One of pose1 or Pose2 is None, use sumSqrDiff average
@@ -220,7 +220,7 @@ def getPosedDiff(pose1, pose2):
 
 
 
-def setFireball():
+def setFireballR():
     # Fireball
     keyboard.press('s')   # press down
     time.sleep(0.05)
@@ -233,7 +233,20 @@ def setFireball():
     keyboard.release('d') # release right
     keyboard.release('l') # release fist
 
-def setDragonPunch():
+def setFireballL():
+    # Fireball
+    keyboard.press('s')   # press down
+    time.sleep(0.05)
+    keyboard.press('a')   # press left
+    time.sleep(0.05)
+    keyboard.release('s') # release down
+    time.sleep(0.05)
+    keyboard.press('l')   # press fist
+    time.sleep(0.1)
+    keyboard.release('a') # release left
+    keyboard.release('l') # release fist
+
+def setDragonPunchR():
     # DragonPunch  
     keyboard.press('d')   # press right
     time.sleep(0.03)
@@ -250,6 +263,51 @@ def setDragonPunch():
     keyboard.release('d') # release right
     keyboard.release('k') # release fist
     
+def setDragonPunchL():
+    # DragonPunch  
+    keyboard.press('a')   # press left
+    time.sleep(0.03)
+    keyboard.press('s')   # press down
+    time.sleep(0.03)
+    keyboard.release('a') # relese left
+    time.sleep(0.03)
+    keyboard.press('a')   # press left
+    time.sleep(0.03)
+    keyboard.release('s') # release down
+    time.sleep(0.03)
+    keyboard.press('k')   # press fist
+    time.sleep(0.1)
+    keyboard.release('a') # release left
+    keyboard.release('k') # release fist
+
+
+def setHurricanKickR():
+    # HurricanKick
+    keyboard.press('s')   # press down
+    time.sleep(0.05)
+    keyboard.press('a')   # press left
+    time.sleep(0.05)
+    keyboard.release('s') # release down
+    time.sleep(0.05)
+    keyboard.press('.')   # press kick
+    time.sleep(0.1)
+    keyboard.release('a') # release left
+    keyboard.release('.') # release kick                
+
+def setHurricanKickL():
+    # HurricanKick
+    keyboard.press('s')   # press down
+    time.sleep(0.05)
+    keyboard.press('d')   # press right
+    time.sleep(0.05)
+    keyboard.release('s') # release down
+    time.sleep(0.05)
+    keyboard.press('.')   # press kick
+    time.sleep(0.1)
+    keyboard.release('d') # release right
+    keyboard.release('.') # release kick      
+
+
 def setFist():
     keyboard.type('j')
 
@@ -267,14 +325,18 @@ def setNormal():
 
 def main():
 
-    actionPoses = []
-    poseFireball = ActionPoseClass("Fireball", 500)
-    actionPoses.append(poseFireball)
-    poseDragonPunch = ActionPoseClass("DragonPunch", 500)
-    actionPoses.append(poseDragonPunch)
+    
+    poseFireballR = ActionPoseClass("FireballR", 500)
+    poseFireballL = ActionPoseClass("FireballL", 500)
+        
+    poseDragonPunchR = ActionPoseClass("DragonPunchR", 500)
+    poseDragonPunchL = ActionPoseClass("DragonPunchL", 500)
+    
+    poseHurricanKickR = ActionPoseClass("HurricanKickR", 500)
+    poseHurricanKickL = ActionPoseClass("HurricanKickL", 500)
+    
     poseFist = ActionPoseClass("Fist", 500)
-    actionPoses.append(poseFist)
-
+    
 
     while(True):
         list_of_files = glob.glob('/dev/shm/temp/output/*.json') # list all the *.json file
@@ -295,19 +357,30 @@ def main():
                 pose = PoseClass(data)
                 #print(pose.listAngle)
                 
-                '''                          
-                for i in range(len(actionPoses)):
-                    print (actionPoses[i].actionName)
-                    print (actionPoses[i].isMatch(pose))
-                '''
+               
 
                
-                if poseFireball.isMatch(pose):
-                    setFireball()
+                if poseFireballR.isMatch(pose):
+                    setFireballR()
                     time.sleep(1)
-                elif poseDragonPunch.isMatch(pose):
-                    setDragonPunch()
+                elif poseFireballL.isMatch(pose):
+                    setFireballL()
+                    time.sleep(1)
+
+                elif poseDragonPunchR.isMatch(pose):
+                    setDragonPunchR()
+                    time.sleep(1)   
+                elif poseDragonPunchL.isMatch(pose):
+                    setDragonPunchL()
+                    time.sleep(1)  
+                                                
+                elif poseHurricanKickR.isMatch(pose):
+                    setHurricanKickR()
                     time.sleep(1)                                                  
+                elif poseHurricanKickL.isMatch(pose):
+                    setHurricanKickL()
+                    time.sleep(1)                                                  
+
                 elif poseFist.isMatch(pose):
                     setFist()    
    
