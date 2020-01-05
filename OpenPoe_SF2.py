@@ -120,10 +120,11 @@ class PoseClass:
 
 
 class ActionPoseClass(PoseClass):
-    def __init__(self, actionName, threshold):
-        self.actionName = actionName
-        self.actionFileName = "setting_" + actionName + ".json"
+    def __init__(self, name, threshold,func):
+        self.actionName = name
+        self.actionFileName = "setting_" + name + ".json"
         self.threshold = threshold
+        self.actionFunc = func
         
         print(self.actionFileName)
 
@@ -145,8 +146,9 @@ class ActionPoseClass(PoseClass):
             super().__init__(data)
             
 
-
-
+    def setAction(self):
+        self.actionFunc()
+        
 
     def getPosedDiff(self, pose2):
         sumSqrDiff = 0
@@ -165,14 +167,15 @@ class ActionPoseClass(PoseClass):
                 if i != 0:            
                     sumSqrDiff = sumSqrDiff + sumSqrDiff/i
             '''
-        if sumSqrDiff != 0:
+        if cntValid != 0:
             sumSqrDiff = sumSqrDiff / cntValid
-            return int(sumSqrDiff)
+            print(self.actionName + "\t" + str(sumSqrDiff))
+        return int(sumSqrDiff)
     
 
     def isMatch(self, poseNow):
         result = self.getPosedDiff(poseNow)
-        print(self.actionName + "\t" + str(result))
+        #print(self.actionName + "\t" + str(result))
         if result !=None and result < self.threshold :
             return True
         else:
@@ -192,30 +195,7 @@ def getLastJsonFileName():
 
 
 
-def getPosedDiff(pose1, pose2):
-    sumSqrDiff = 0
-    cntValid = 0
-    for i in range(len(pose1.listAngle)):
-        if pose1.listAngle[i] != None and pose2.listAngle[i] != None :
 
-            angleDiff = pose1.listAngle[i] - pose2.listAngle[i]
-            if angleDiff > 180:
-                angleDiff= 360 - angleDiff
-
-            sumSqrDiff = sumSqrDiff + angleDiff ** 4
-            cntValid = cntValid + 1
-        '''        
-        else: # One of pose1 or Pose2 is None, use sumSqrDiff average
-            if i != 0:            
-                sumSqrDiff = sumSqrDiff + sumSqrDiff/i
-        '''
-    if sumSqrDiff != 0:
-        sumSqrDiff = sumSqrDiff / cntValid
-    if sumSqrDiff == 0: # No valid sumSqrDiff was calculated
-        sumSqrDiff = None
-        return sumSqrDiff
-    else:
-        return int(sumSqrDiff)
 
 
 
@@ -325,18 +305,25 @@ def setNormal():
 
 def main():
 
-    
-    poseFireballR = ActionPoseClass("FireballR", 500)
-    poseFireballL = ActionPoseClass("FireballL", 500)
+    poseFireballR = ActionPoseClass("FireballR", 500, setFireballR)
+    poseFireballL = ActionPoseClass("FireballL", 500, setFireballL)
         
-    poseDragonPunchR = ActionPoseClass("DragonPunchR", 500)
-    poseDragonPunchL = ActionPoseClass("DragonPunchL", 500)
+    poseDragonPunchR = ActionPoseClass("DragonPunchR", 500, setDragonPunchR)
+    poseDragonPunchL = ActionPoseClass("DragonPunchL", 500, setDragonPunchL)
     
-    poseHurricanKickR = ActionPoseClass("HurricanKickR", 500)
-    poseHurricanKickL = ActionPoseClass("HurricanKickL", 500)
+    poseHurricanKickR = ActionPoseClass("HurricanKickR", 500, setHurricanKickR)
+    poseHurricanKickL = ActionPoseClass("HurricanKickL", 500, setHurricanKickL)
     
-    poseFist = ActionPoseClass("Fist", 500)
+    poseFist = ActionPoseClass("Fist", 500, setFist)
     
+    actionPoses = []
+    actionPoses.append(poseFireballR)
+    actionPoses.append(poseFireballL)
+    actionPoses.append(poseDragonPunchR)
+    actionPoses.append(poseDragonPunchL)
+    actionPoses.append(poseHurricanKickR)
+    actionPoses.append(poseHurricanKickL)
+    actionPoses.append(poseFist)
 
     while(True):
         list_of_files = glob.glob('/dev/shm/temp/output/*.json') # list all the *.json file
@@ -356,35 +343,65 @@ def main():
                 
                 pose = PoseClass(data)
                 #print(pose.listAngle)
+               
                 
-               
+                # Find the minimum difference between defined action pose and current pose
+                indexMin = 0
+                minPoseDiff = 65535
+                for i in range(len(actionPoses)):
+                    poseDiff = actionPoses[i].getPosedDiff(pose)
+                    if poseDiff < minPoseDiff:
+                        minPoseDiff = poseDiff
+                        indexMin = i 
+                
+                if minPoseDiff < actionPoses[indexMin].threshold :
+                    actionPoses[indexMin].setAction()
 
-               
-                if poseFireballR.isMatch(pose):
-                    setFireballR()
-                    time.sleep(1)
-                elif poseFireballL.isMatch(pose):
-                    setFireballL()
-                    time.sleep(1)
 
-                elif poseDragonPunchR.isMatch(pose):
-                    setDragonPunchR()
-                    time.sleep(1)   
-                elif poseDragonPunchL.isMatch(pose):
-                    setDragonPunchL()
-                    time.sleep(1)  
+
+
+
+
+                '''
+                poseDiffFireballR = poseFireballR.getPosedDiff(pose)
+                poseDiffFireballL = poseFireballL.getPosedDiff(pose)
+                poseDiffDragonPunchR = poseDragonPunchR.getPosedDiff(pose)
+                poseDiffDragonPunchL = poseDragonPunchL.getPosedDiff(pose)
+                poseDiffHurricanKickR = poseHurricanKickR.getPosedDiff(pose)
+                poseDiffHurricanKickL = poseHurricanKickL.getPosedDiff(pose)
+                poseDiffFist = poseFist.getPosedDiff(pose)
+                
+                minPoseDiff = min(poseDiffFireballR, poseDiffFireballL,\
+                                  poseDiffDragonPunchR, poseDiffDragonPunchL,\
+                                  poseDiffHurricanKickR, poseDiffHurricanKickL,\
+                                  poseDiffFist)
+
+                if minPoseDiff < 500:
+                    if minPoseDiff == poseDiffFireballR:
+                        poseFireballR.setAction()
+                        #time.sleep(1)                   
+                    elif minPoseDiff == poseDiffFireballL:
+                        poseFireballL.setAction()
+                        #time.sleep(1)
+
+                    elif minPoseDiff == poseDiffDragonPunchR:
+                        poseDragonPunchR.setAction()
+                        #time.sleep(1)   
+                    elif minPoseDiff == poseDiffDragonPunchL:
+                        poseDragonPunchL.setAction()
+                        #time.sleep(1)  
                                                 
-                elif poseHurricanKickR.isMatch(pose):
-                    setHurricanKickR()
-                    time.sleep(1)                                                  
-                elif poseHurricanKickL.isMatch(pose):
-                    setHurricanKickL()
-                    time.sleep(1)                                                  
+                    elif minPoseDiff == poseDiffHurricanKickR:
+                        poseHurricanKickR.setAction()
+                        #time.sleep(1)                                                  
+                    elif minPoseDiff == poseDiffHurricanKickL:
+                        poseHurricanKickL.setAction()
+                        #time.sleep(1)                                                  
 
-                elif poseFist.isMatch(pose):
-                    setFist()    
-   
-                
+                    elif minPoseDiff == poseDiffFist:
+                        poseFist.setAction() 
+                '''
+
 
                 # Movement
                 #print(pose.A1_8)
