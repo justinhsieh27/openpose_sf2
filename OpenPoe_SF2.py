@@ -148,7 +148,7 @@ class ActionPoseClass(PoseClass):
 
     def setAction(self):
         self.actionFunc()
-        
+        time.sleep(0.5)
 
     def getPosedDiff(self, pose2):
         sumSqrDiff = 0
@@ -168,9 +168,9 @@ class ActionPoseClass(PoseClass):
                     sumSqrDiff = sumSqrDiff + sumSqrDiff/i
             '''
         if cntValid != 0:
-            sumSqrDiff = sumSqrDiff / cntValid
+            sumSqrDiff = int(sumSqrDiff / cntValid)
             print(self.actionName + "\t" + str(sumSqrDiff))
-        return int(sumSqrDiff)
+        return sumSqrDiff
     
 
     def isMatch(self, poseNow):
@@ -344,63 +344,23 @@ def main():
                 pose = PoseClass(data)
                 #print(pose.listAngle)
                
-                
+                os.system('clear')
+
                 # Find the minimum difference between defined action pose and current pose
-                indexMin = 0
-                minPoseDiff = 65535
+                indexMin = None
+                minPoseDiff = None
                 for i in range(len(actionPoses)):
                     poseDiff = actionPoses[i].getPosedDiff(pose)
-                    if poseDiff < minPoseDiff:
-                        minPoseDiff = poseDiff
-                        indexMin = i 
+                    if poseDiff < actionPoses[i].threshold:  
+                        # This action was triggered, but need to check if other one more fit.
+                        if minPoseDiff == None or poseDiff < minPoseDiff:
+                            minPoseDiff = poseDiff
+                            indexMin = i 
                 
-                if minPoseDiff < actionPoses[indexMin].threshold :
+                if indexMin != None :
+                    print("\nAction: " + actionPoses[indexMin].actionName)
                     actionPoses[indexMin].setAction()
 
-
-
-
-
-
-                '''
-                poseDiffFireballR = poseFireballR.getPosedDiff(pose)
-                poseDiffFireballL = poseFireballL.getPosedDiff(pose)
-                poseDiffDragonPunchR = poseDragonPunchR.getPosedDiff(pose)
-                poseDiffDragonPunchL = poseDragonPunchL.getPosedDiff(pose)
-                poseDiffHurricanKickR = poseHurricanKickR.getPosedDiff(pose)
-                poseDiffHurricanKickL = poseHurricanKickL.getPosedDiff(pose)
-                poseDiffFist = poseFist.getPosedDiff(pose)
-                
-                minPoseDiff = min(poseDiffFireballR, poseDiffFireballL,\
-                                  poseDiffDragonPunchR, poseDiffDragonPunchL,\
-                                  poseDiffHurricanKickR, poseDiffHurricanKickL,\
-                                  poseDiffFist)
-
-                if minPoseDiff < 500:
-                    if minPoseDiff == poseDiffFireballR:
-                        poseFireballR.setAction()
-                        #time.sleep(1)                   
-                    elif minPoseDiff == poseDiffFireballL:
-                        poseFireballL.setAction()
-                        #time.sleep(1)
-
-                    elif minPoseDiff == poseDiffDragonPunchR:
-                        poseDragonPunchR.setAction()
-                        #time.sleep(1)   
-                    elif minPoseDiff == poseDiffDragonPunchL:
-                        poseDragonPunchL.setAction()
-                        #time.sleep(1)  
-                                                
-                    elif minPoseDiff == poseDiffHurricanKickR:
-                        poseHurricanKickR.setAction()
-                        #time.sleep(1)                                                  
-                    elif minPoseDiff == poseDiffHurricanKickL:
-                        poseHurricanKickL.setAction()
-                        #time.sleep(1)                                                  
-
-                    elif minPoseDiff == poseDiffFist:
-                        poseFist.setAction() 
-                '''
 
 
                 # Movement
