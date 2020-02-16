@@ -124,6 +124,7 @@ class ActionPoseClass(PoseClass):
         self.actionName = name
         self.actionFileName = "setting_" + name + ".json"
         self.threshold = threshold
+        self.similarity = 0
         self.actionFunc = func
         
         print(self.actionFileName)
@@ -150,7 +151,7 @@ class ActionPoseClass(PoseClass):
         self.actionFunc()
         time.sleep(0.5)
 
-    def getPosedDiff(self, pose2):
+    def getPoseDiff(self, pose2):
         sumSqrDiff = 0
         cntValid = 0
         for i in range(len(self.listAngle)):
@@ -168,10 +169,17 @@ class ActionPoseClass(PoseClass):
                     sumSqrDiff = sumSqrDiff + sumSqrDiff/i
             '''
         if cntValid != 0:
-            sumSqrDiff = int(sumSqrDiff / cntValid)
+            sumSqrDiff = sumSqrDiff / cntValid
             print(self.actionName + "\t" + str(sumSqrDiff))
         return sumSqrDiff
     
+    def getSimilarity(self, pose2):
+        MAX_DIFF = 32400.0    # 180^2
+        similarity = 1 - (self.getPoseDiff(pose2) / MAX_DIFF)
+        print(self.actionName + "\t" + str(similarity))
+        return similarity
+        
+
 
     def isMatch(self, poseNow):
         result = self.getPosedDiff(poseNow)
@@ -346,11 +354,12 @@ def main():
                
                 os.system('clear')
 
+                '''
                 # Find the minimum difference between defined action pose and current pose
                 indexMin = None
                 minPoseDiff = None
                 for i in range(len(actionPoses)):
-                    poseDiff = actionPoses[i].getPosedDiff(pose)
+                    poseDiff = actionPoses[i].getPoseDiff(pose)
                     if poseDiff < actionPoses[i].threshold:  
                         # This action was triggered, but need to check if other one more fit.
                         if minPoseDiff == None or poseDiff < minPoseDiff:
@@ -360,8 +369,23 @@ def main():
                 if indexMin != None :
                     print("\nAction: " + actionPoses[indexMin].actionName)
                     actionPoses[indexMin].setAction()
+                '''
 
 
+                # Find the maximum similarity between defined action pose and current pose
+                indexMax = None
+                maxPoseSim = None
+                for i in range(len(actionPoses)):
+                    poseSim = actionPoses[i].getSimilarity(pose)
+                    if maxPoseSim == None or poseSim > maxPoseSim:
+                        maxPoseSim = poseSim
+                        indexMax = i 
+
+                if indexMax != None and maxPoseSim > 0.97:
+                    print("\nAction: " + actionPoses[indexMax].actionName)
+                    actionPoses[indexMax].setAction()
+             
+                    
 
                 # Movement
                 #print(pose.A1_8)
