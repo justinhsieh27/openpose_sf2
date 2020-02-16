@@ -176,7 +176,7 @@ class ActionPoseClass(PoseClass):
     def getSimilarity(self, pose2):
         MAX_DIFF = 32400.0    # 180^2
         similarity = 1 - (self.getPoseDiff(pose2) / MAX_DIFF)
-        print(self.actionName + "\t" + str(similarity))
+        #print(self.actionName + "\t" + str(similarity))
         return similarity
         
 
@@ -211,11 +211,11 @@ def getLastJsonFileName():
 def setFireballR():
     # Fireball
     keyboard.press('s')   # press down
-    time.sleep(0.05)
+    time.sleep(0.03)
     keyboard.press('d')   # press right
-    time.sleep(0.05)
+    time.sleep(0.03)
     keyboard.release('s') # release down
-    time.sleep(0.05)
+    time.sleep(0.03)
     keyboard.press('l')   # press fist
     time.sleep(0.1)
     keyboard.release('d') # release right
@@ -224,11 +224,11 @@ def setFireballR():
 def setFireballL():
     # Fireball
     keyboard.press('s')   # press down
-    time.sleep(0.05)
+    time.sleep(0.03)
     keyboard.press('a')   # press left
-    time.sleep(0.05)
+    time.sleep(0.03)
     keyboard.release('s') # release down
-    time.sleep(0.05)
+    time.sleep(0.03)
     keyboard.press('l')   # press fist
     time.sleep(0.1)
     keyboard.release('a') # release left
@@ -354,7 +354,7 @@ def main():
                
                 os.system('clear')
 
-                '''
+                
                 # Find the minimum difference between defined action pose and current pose
                 indexMin = None
                 minPoseDiff = None
@@ -369,9 +369,9 @@ def main():
                 if indexMin != None :
                     print("\nAction: " + actionPoses[indexMin].actionName)
                     actionPoses[indexMin].setAction()
+                    time.sleep(0.5)
+
                 '''
-
-
                 # Find the maximum similarity between defined action pose and current pose
                 indexMax = None
                 maxPoseSim = None
@@ -381,11 +381,11 @@ def main():
                         maxPoseSim = poseSim
                         indexMax = i 
 
-                if indexMax != None and maxPoseSim > 0.97:
+                if indexMax != None and maxPoseSim > 0.985:
                     print("\nAction: " + actionPoses[indexMax].actionName)
                     actionPoses[indexMax].setAction()
-             
-                    
+                    time.sleep(0.5)
+                '''    
 
                 # Movement
                 #print(pose.A1_8)
